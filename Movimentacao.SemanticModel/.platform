@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Movimentacao"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d09eb11f-d28b-4086-b498-907966c4c029"
+  }
+}

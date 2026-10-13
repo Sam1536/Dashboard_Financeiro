@@ -1,0 +1,57 @@
+table _Medidas
+	lineageTag: 854d0aa8-c9c6-4079-9ba9-591f2aaa04ce
+
+	measure 'Total Lucro' = SUM(Movimentacao[Valor da Movimentacao] )
+		lineageTag: ef410fe2-9bf2-4818-a209-11c9889569e6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Faturamento' =
+			
+			CALCULATE(
+			    SUM(
+			        Movimentacao[Valor da Movimentacao]
+			    ),
+			    Movimentacao[Tipo] = "Recebimento"
+			)
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 3fd48fcb-f47b-4ef3-afee-2ee28f92906a
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Total Custo' = ```
+			
+			CALCULATE(
+			    SUM(
+			        Movimentacao[Valor da Movimentacao]
+			        ), 
+			        Movimentacao[Tipo] = "Pagamento"
+			)
+			
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: f87d72f5-dbdf-453c-9552-a8106d57f5ea
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Margem Lucro' = [Total Lucro] / [Total Faturamento]
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: bc2345e6-5432-48a1-9fcd-9524277c963d
+
+	measure '% Custo' = 1 - [Margem Lucro]
+		lineageTag: deaba85e-6944-4752-8268-01b03fe59abd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition _Medidas = m
+		mode: import
+		source =
+				let
+				    Fonte = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Coluna 1" = _t]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(Fonte,{{"Coluna 1", type text}}),
+				    #"Colunas Removidas" = Table.RemoveColumns(#"Tipo Alterado",{"Coluna 1"})
+				in
+				    #"Colunas Removidas"
+
+	annotation PBI_ResultType = Table
+

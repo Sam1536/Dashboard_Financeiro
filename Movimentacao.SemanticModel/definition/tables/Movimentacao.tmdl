@@ -1,0 +1,103 @@
+table Movimentacao
+	lineageTag: d764aeba-4234-4f07-a7af-63701bd1451c
+
+	column 'Numero Movimentacao'
+		dataType: int64
+		formatString: 0
+		lineageTag: 6602a5ba-d165-4420-b898-13604abc2bd6
+		summarizeBy: sum
+		sourceColumn: Numero Movimentacao
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome
+		dataType: string
+		lineageTag: dac35df2-2f8b-4bb3-8cb8-ac91ce585d2c
+		summarizeBy: none
+		sourceColumn: Nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Data da Movimentacao'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6272c429-05f3-42a9-aa1d-2e5a4d73d9a6
+		summarizeBy: none
+		sourceColumn: Data da Movimentacao
+
+		variation Variation
+			isDefault
+			relationship: d988a2bc-0833-4f87-9aa1-3f846e34c663
+			defaultHierarchy: LocalDateTable_7e74cade-1f2c-4491-afa1-83bf51f49d8a.'Hierarquia de datas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Valor da Movimentacao'
+		dataType: double
+		lineageTag: 99cb62b9-68e1-4bf4-9574-7606bdb90bd5
+		summarizeBy: sum
+		sourceColumn: Valor da Movimentacao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Tipo
+		dataType: string
+		lineageTag: 4fd98fd0-ffab-4200-9ff2-81465e75e995
+		summarizeBy: none
+		sourceColumn: Tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mês
+		dataType: int64
+		formatString: 0
+		lineageTag: 02ec4671-a0ed-4264-956a-0d875e0ac4ed
+		summarizeBy: sum
+		sourceColumn: Mês
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nome do Mês'
+		dataType: string
+		lineageTag: b40f4431-2882-4789-92a0-083f70f3e998
+		summarizeBy: none
+		sourceColumn: Nome do Mês
+		sortByColumn: Mês
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cidades
+		dataType: string
+		lineageTag: a33399d3-0759-48b5-a180-fffda4ce451b
+		summarizeBy: none
+		sourceColumn: Cidades
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Movimentacao = m
+		mode: import
+		source =
+				let
+				    Fonte = Excel.Workbook(File.Contents("C:\Users\a-agn\Documents\PoweBi Exercícios e Outros\PowerBI_Impressionador_Hashtag_2023 Materia\Importação e Tratamento de BD-Power Query\Intensivão de Power BI - Edição 2.0\Aula 2 - Dashboard Financeiro\Base Financeiro.xlsx"), null, true),
+				    Planilha1_Sheet = Fonte{[Item="Planilha1",Kind="Sheet"]}[Data],
+				    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(Planilha1_Sheet, [PromoteAllScalars=true]),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Cabeçalhos Promovidos",{{"Numero Movimentacao", Int64.Type}, {"Nome", type text}, {"Endereco", type text}, {"Data da Movimentacao", type date}, {"Valor da Movimentacao", type number}, {"Tipo", type text}}),
+				    #"Preenchido Abaixo" = Table.FillDown(#"Tipo Alterado",{"Data da Movimentacao"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Preenchido Abaixo"),
+				    #"Mês Inserido" = Table.AddColumn(#"Duplicatas Removidas", "Mês", each Date.Month([Data da Movimentacao]), Int64.Type),
+				    #"Nome do Mês Inserido" = Table.AddColumn(#"Mês Inserido", "Nome do Mês", each Date.MonthName([Data da Movimentacao]), type text),
+				    #"Texto Inserido Entre os Delimitadores" = Table.AddColumn(#"Nome do Mês Inserido", "Cidades", each Text.BetweenDelimiters([Endereco], ", ", " -", 1, 0), type text),
+				    #"Colunas Removidas" = Table.RemoveColumns(#"Texto Inserido Entre os Delimitadores",{"Endereco"})
+				in
+				    #"Colunas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+
