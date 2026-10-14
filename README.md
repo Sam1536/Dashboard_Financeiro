@@ -1,4 +1,3 @@
-# Dashboard Financeiro
 
 # 📈 Dashboard de Movimentação | Power BI
 
